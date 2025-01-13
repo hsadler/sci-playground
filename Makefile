@@ -1,0 +1,3 @@
+
+run:
+	jupyter notebook
