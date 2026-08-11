@@ -4,9 +4,10 @@ version = "0.1.0"
 description = ""
 authors = ["hsadler <harrysadlermusic@gmail.com>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.12,<3.14"
 notebook = "^7.3.2"
 jupyterlab = "^4.3.4"
 lightkurve = "^2.5.0"
