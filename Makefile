@@ -5,12 +5,18 @@ help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
 		| awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-17s\033[0m %s\n", $$1, $$2}'
 
-install: setup-git-filter  ## Install everything, and set up the notebook git filter
+install:  ## Install everything, and set up the notebook git filter
 	uv sync --all-groups
+	$(MAKE) setup-git-filter
 
 setup-git-filter:  ## Stop notebook outputs from showing up as git changes (once per clone)
-	uv sync --all-groups
 	uv run nbstripout --install --attributes .gitattributes
+	@# A fresh clone checks out the *stripped* notebooks, so the index caches their
+	@# small size. The first time you execute one, the size no longer matches and git
+	@# reports it modified even though the filtered content is identical. This `add`
+	@# stages nothing -- it only refreshes the cached stat info -- and it stays clean
+	@# from then on.
+	@git add -- '*.ipynb' 2>/dev/null || true
 	@echo
 	@echo "Notebook outputs are now stripped from what git stores."
 	@echo "Your files keep their outputs; running a notebook no longer makes a diff."

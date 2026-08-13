@@ -169,13 +169,17 @@ Concretely: `03_detrending_and_finding_periods.ipynb` is ~330 KB on disk with it
 figures, and ~7 KB as far as git is concerned. Re-executing it top to bottom produces
 **no diff at all**.
 
-Two things to know:
+Three things to know:
 
 - **`git checkout`/`git stash` will discard a notebook's outputs**, because the restore
   side of the filter is a no-op — git only has the stripped version to give back. Re-run
   the notebook to get its figures back.
 - The filter is marked `required`, so git operations on notebooks fail loudly if the
   venv is missing rather than silently committing outputs. Run `make install` first.
+- **If `git status` ever shows a notebook as modified but `git diff` is empty**, the index
+  is caching a stale file size — harmless, and nothing can be committed. `git add --
+  '*.ipynb'` clears it and stages nothing. `make setup-git-filter` already does this, so
+  you should only meet it if you install the filter by hand.
 
 If you ever want a specific notebook's outputs committed (e.g. to show validated
 results on GitHub), add `"keep_output": true` to that notebook's top-level metadata —
