@@ -1,20 +1,77 @@
-[tool.poetry]
+[project]
 name = "sci-playground"
 version = "0.1.0"
-description = ""
-authors = ["hsadler <harrysadlermusic@gmail.com>"]
+description = "Learning observational astronomy by doing it — and taking a hobbyist's swing at a real discovery."
 readme = "README.md"
-package-mode = false
+authors = [{ name = "hsadler", email = "harrysadlermusic@gmail.com" }]
+requires-python = ">=3.12,<3.14"
 
-[tool.poetry.dependencies]
-python = ">=3.12,<3.14"
-notebook = "^7.3.2"
-jupyterlab = "^4.3.4"
-lightkurve = "^2.5.0"
-numpy = "^2.2.1"
-ipykernel = "^6.29.5"
+dependencies = [
+    # --- foundations ---
+    "numpy>=2.1",
+    "scipy>=1.14",
+    "matplotlib>=3.9",
+    "pandas>=2.2",
+    "pyarrow>=17.0",           # parquet, for caching derived light curves
+    # --- astronomy core ---
+    "astropy>=6.1",
+    "astroquery>=0.4.7",       # MAST / SIMBAD / Vizier / NASA Exoplanet Archive
+    "lightkurve>=2.5",
+    # --- transit hunting ---
+    "transitleastsquares>=1.0.31",  # TLS: shape-aware period search, beats BLS
+    "wotan>=1.10",                  # detrending that does not eat transits
+    "batman-package>=2.5",          # analytic limb-darkened transit models
+    # batman still does `import distutils`, which Python 3.12 removed. setuptools
+    # ships a distutils shim registered at interpreter startup via a .pth file, so
+    # simply having it installed makes batman importable. Do not remove.
+    "setuptools>=75.0",
+]
 
+[project.optional-dependencies]
+# Bayesian fitting — heavier, install with: uv sync --extra fitting
+fitting = [
+    "emcee>=3.1",
+    "dynesty>=2.1",
+    "arviz>=0.20",
+    "corner>=2.2",
+]
+
+[dependency-groups]
+dev = [
+    "jupyterlab>=4.3",
+    "notebook>=7.3",
+    "ipykernel>=6.29",
+    "ipywidgets>=8.1",   # lightkurve's interactive widgets
+    "nbdime>=4.0",       # semantic notebook diffs (keeps outputs)
+    "nbstripout>=0.8",   # opt-in output stripping, see `make nb-strip`
+    "pytest>=8.3",
+    "ruff>=0.7",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/skyplay"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "NPY"]
+ignore = [
+    "E501", # long lines: docstrings here quote formulae and URLs
+    "B008", # function call in default arg: fine for astropy units
+]
+
+[tool.ruff.lint.per-file-ignores]
+"*.ipynb" = ["E402", "F401"] # notebooks import mid-file and for side effects
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = [
+    "network: hits the MAST archive; deselect with -m 'not network'",
+]

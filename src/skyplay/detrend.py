@@ -1,0 +1,113 @@
+"""Removing trends without removing the transit.
+
+A raw light curve drifts: the star rotates and has spots, the spacecraft warms and
+cools, the target moves across the detector. All of that produces slow variation far
+larger than a planetary transit. Detrending divides it out.
+
+The danger is obvious once stated: a filter wide enough to ignore a transit will
+also ignore slow real signals, and a filter narrow enough to track the star's
+variability will happily absorb the transit itself, shrinking your depth or
+erasing the signal. **Choose the window from the transit duration you expect.**
+The usual rule of thumb is a window at least ~3x the transit duration.
+
+Two implementations here:
+
+- `savgol_flatten` — lightkurve's built-in `flatten()`, a Savitzky-Golay filter.
+  Fine, and what the earlier notebooks use.
+- `biweight_flatten` — wotan's Tukey biweight, which is *robust*: outlying points
+  (including in-transit points) get down-weighted rather than pulled through, so
+  it preserves transit depth noticeably better. This is the better default.
+
+**A units trap that will bite you.** lightkurve's ``flatten(window_length=...)``
+counts *cadences*; wotan's ``window_length=`` is in *days*. At Kepler's 30-minute
+long cadence, lightkurve's 901 works out to 901 * 0.5/24 ~ 18.8 days — a very wide
+window. Passing 901 to wotan asks for a 901-day window and silently does almost
+nothing. The wrappers below take days in both cases and convert, so you only have
+to think about this once.
+"""
+
+from __future__ import annotations
+
+import lightkurve as lk
+import numpy as np
+
+__all__ = ["cadence_days", "days_to_cadences", "savgol_flatten", "biweight_flatten"]
+
+
+def cadence_days(lc: lk.LightCurve) -> float:
+    """Median spacing between consecutive measurements, in days.
+
+    Uses the median rather than the mean so data gaps (which are everywhere in
+    real mission data) do not inflate the answer.
+    """
+    return float(np.nanmedian(np.diff(np.asarray(lc.time.value, dtype=float))))
+
+
+def days_to_cadences(lc: lk.LightCurve, window_days: float) -> int:
+    """Convert a window in days to an odd number of cadences, as Savitzky-Golay needs."""
+    n = int(round(window_days / cadence_days(lc)))
+    n = max(n, 3)
+    return n if n % 2 == 1 else n + 1
+
+
+def savgol_flatten(
+    lc: lk.LightCurve, window_days: float = 18.8, **kwargs
+) -> tuple[lk.LightCurve, lk.LightCurve]:
+    """Savitzky-Golay detrend via lightkurve. Returns ``(flat, trend)``.
+
+    The default matches the ``window_length=901`` used in the earlier notebooks, so
+    results stay reproducible.
+
+    **A defence worth knowing about.** A plain Savitzky-Golay filter with a window
+    near the transit duration will fit the transit as though it were trend and
+    divide it away — on Kepler-8 b, a 0.13-day window takes an 8,950 ppm transit
+    down to ~70 ppm, i.e. destroys it. lightkurve's `flatten` avoids most of this
+    because it *iteratively sigma-clips* before fitting (``niters=3, sigma=3`` by
+    default), and in-transit points are outliers to the trend, so they get excluded
+    from the fit that would otherwise absorb them. With clipping left on, that same
+    0.13-day window only costs ~5% of the depth.
+
+    Do not lean on that silently: it is a default, not a guarantee, and it is weaker
+    for long or shallow transits where in-transit points are less outlying. Choosing
+    a window well above the duration is still the actual fix. ``**kwargs`` are passed
+    to `lightkurve.LightCurve.flatten`, so you can vary ``niters``/``sigma``/
+    ``polyorder`` to see this for yourself — note that ``niters=0`` raises inside
+    lightkurve, so use ``niters=1, sigma=1e9`` to disable clipping.
+    """
+    window = days_to_cadences(lc, window_days)
+    return lc.flatten(window_length=window, return_trend=True, **kwargs)
+
+
+def biweight_flatten(
+    lc: lk.LightCurve,
+    window_days: float = 0.5,
+    method: str = "biweight",
+) -> tuple[lk.LightCurve, lk.LightCurve]:
+    """Robust detrend via wotan. Returns ``(flat, trend)`` as lightkurve objects.
+
+    ``window_days`` should be at least ~3x your expected transit duration. For a
+    typical hot Jupiter (duration ~3 h) the 0.5 d default is about right.
+
+    Other useful ``method`` values: ``'rspline'`` (robust spline), ``'hspline'``,
+    ``'median'``, ``'trim_mean'``. See the wotan docs for the full set.
+    """
+    from wotan import flatten as wotan_flatten
+
+    time = np.asarray(lc.time.value, dtype=float)
+    flux = np.asarray(lc.flux.value, dtype=float)
+
+    flat_flux, trend_flux = wotan_flatten(
+        time, flux, window_length=window_days, method=method, return_trend=True
+    )
+
+    flat = lc.copy()
+    flat.flux = flat_flux * lc.flux.unit
+    if lc.flux_err is not None:
+        # Dividing flux by the trend divides its uncertainty by the same factor.
+        with np.errstate(divide="ignore", invalid="ignore"):
+            flat.flux_err = (np.asarray(lc.flux_err.value) / trend_flux) * lc.flux.unit
+
+    trend = lc.copy()
+    trend.flux = trend_flux * lc.flux.unit
+
+    return flat.remove_nans(), trend
