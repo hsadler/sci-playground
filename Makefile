@@ -9,17 +9,21 @@ install:  ## Install everything, and set up the notebook git filter
 	uv sync --all-groups
 	$(MAKE) setup-git-filter
 
-setup-git-filter:  ## Stop notebook outputs from showing up as git changes (once per clone)
+setup-git-filter:  ## Stop notebook outputs from being committed (once per clone)
 	uv run nbstripout --install --attributes .gitattributes
-	@# A fresh clone checks out the *stripped* notebooks, so the index caches their
-	@# small size. The first time you execute one, the size no longer matches and git
-	@# reports it modified even though the filtered content is identical. This `add`
-	@# stages nothing -- it only refreshes the cached stat info -- and it stays clean
-	@# from then on.
-	@git add -- '*.ipynb' 2>/dev/null || true
 	@echo
-	@echo "Notebook outputs are now stripped from what git stores."
-	@echo "Your files keep their outputs; running a notebook no longer makes a diff."
+	@echo "Notebook outputs are now stripped from what git stores, so they can never"
+	@echo "be committed. Your files keep their outputs for Jupyter."
+	@echo "If 'git status' lists a notebook after you run it, 'make nb-refresh' clears it."
+
+nb-refresh:  ## Clear notebooks that `git status` lists but `git diff` shows as empty
+	@# Executing a notebook changes its size, so the size cached in the index no
+	@# longer matches. Git re-filters, finds the content identical, but leaves the
+	@# stale stat entry, and `git status` keeps reporting the file. This `add`
+	@# refreshes that stat info; because the filtered content is unchanged it stages
+	@# nothing. Purely cosmetic -- there was never anything to commit.
+	git add -- '*.ipynb'
+	@git status --short -- '*.ipynb'
 
 run: lab  ## Alias for `lab`
 

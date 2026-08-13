@@ -166,8 +166,14 @@ make setup-git-filter
 ```
 
 Concretely: `03_detrending_and_finding_periods.ipynb` is ~330 KB on disk with its
-figures, and ~7 KB as far as git is concerned. Re-executing it top to bottom produces
-**no diff at all**.
+figures and ~15 KB as far as git is concerned. Re-executing it top to bottom leaves
+`git diff` **empty** and stages nothing — outputs can't be committed even by accident.
+
+What it does *not* do is keep `git status` quiet. Running a notebook changes its size on
+disk, so the size cached in git's index no longer matches; git re-filters the file, finds
+the content identical, but leaves the stale entry in place and keeps listing it. The file
+shows as modified while `git diff` is empty and `git add` stages nothing. It's cosmetic,
+it doesn't clear on its own, and `make nb-refresh` silences it.
 
 Three things to know:
 
@@ -176,10 +182,8 @@ Three things to know:
   the notebook to get its figures back.
 - The filter is marked `required`, so git operations on notebooks fail loudly if the
   venv is missing rather than silently committing outputs. Run `make install` first.
-- **If `git status` ever shows a notebook as modified but `git diff` is empty**, the index
-  is caching a stale file size — harmless, and nothing can be committed. `git add --
-  '*.ipynb'` clears it and stages nothing. `make setup-git-filter` already does this, so
-  you should only meet it if you install the filter by hand.
+- **`git status` listing a notebook with an empty `git diff` is expected**, per above.
+  Confirm with `git diff --no-textconv` (also empty) and clear it with `make nb-refresh`.
 
 If you ever want a specific notebook's outputs committed (e.g. to show validated
 results on GitHub), add `"keep_output": true` to that notebook's top-level metadata —
