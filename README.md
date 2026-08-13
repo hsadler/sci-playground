@@ -182,13 +182,45 @@ results on GitHub), add `"keep_output": true` to that notebook's top-level metad
 nbstripout honours it. Be aware that re-running that notebook *will* then produce
 diffs again, which is the tradeoff.
 
-## Other notebooks
+## Choosing a target for an original search
 
-- **`python_lightkurve.ipynb`** — a short scratch walkthrough: download a target pixel
-  file, turn it into a light curve, and flatten it.
-- **`python_lightkurve_yt_example.ipynb`** — "Finding exoplanets with Python +
-  Lightkurve": look at a star known to host a planet, then try spotting a transiting
-  planet yourself.
+The learning path always hands you the star. Picking your own is the first genuinely open
+decision, and it's where a search is won or lost — the target selection determines what
+you *could* find long before any code runs.
+
+**Prefer TESS over Kepler.** Kepler's field has been picked over for a decade by people
+with better tools. TESS is still producing data, covers most of the sky, and its
+full-frame images are far less exhaustively searched.
+
+**Prefer small, cool, nearby stars.** M dwarfs (effective temperature roughly
+2,500–3,700 K) are the sweet spot, for two independent reasons:
+
+- **Depth scales as (Rp/Rs)².** The same planet around a star half the Sun's radius
+  gives a transit four times deeper. Small star = detectable planet.
+- **Short orbits.** Cool stars have close-in habitable zones, so interesting planets
+  orbit in days rather than years — and TESS observes each sector for only ~27 days, so
+  you need a period short enough to fit two or three transits inside that window.
+
+Nearby (say within ~25 parsecs) means brighter, which means better photometry per cadence.
+
+**Where to browse.** The [MAST Portal](https://mast.stsci.edu/portal/Mashup/Clients/Mast/Portal.html)
+exposes the TESS Candidate Target List (CTL, a filtered subset of the TESS Input Catalog)
+under *MAST catalogs → TESS CTL → Advanced Search* — millions of rows, filterable on
+temperature, distance, and magnitude. Take the TIC id of anything promising. You can also
+query the same catalogs from Python via `astroquery`, which is already a dependency here
+and is usually less painful than the web UI.
+
+**Then check whether it's already known — before you get attached.** Look the target up in
+[exoMAST](https://exo.mast.stsci.edu/), the
+[NASA Exoplanet Archive](https://exoplanetarchive.ipac.caltech.edu/), and the
+[Kepler Eclipsing Binary Catalog](http://keplerebs.villanova.edu/). Most stars with an
+obvious signal already have a paper. That is not a reason to stop — reproducing a known
+result is exactly how the capstone builds trust in the pipeline — but you should know
+which situation you're in from the start.
+
+If `lightkurve`'s search returns nothing for a target that MAST clearly has, the data may
+only exist as a full-frame-image cutout rather than a target pixel file; reach for
+`astroquery.mast` or TESSCut in that case.
 
 ## A note on "discovery"
 
