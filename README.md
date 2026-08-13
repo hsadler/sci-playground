@@ -51,7 +51,7 @@ defaults are superseded. What this project uses, and why:
 | Units, time scales, FITS, tables | [astropy](https://www.astropy.org/) | The hub of the ecosystem. Worth learning directly, not just through lightkurve |
 | Archive queries | [astroquery](https://astroquery.readthedocs.io/) | MAST, SIMBAD, Vizier, Gaia, NASA Exoplanet Archive |
 | Mission data access | [lightkurve](https://docs.lightkurve.org/) | — |
-| Detrending | [wotan](https://github.com/hippke/wotan) | Its robust biweight preserves transit depth better than lightkurve's `flatten()` (Savitzky–Golay), which gets dragged toward in-transit points |
+| Detrending | [wotan](https://github.com/hippke/wotan) | Windows in real time rather than cadence counts, which matters across the data gaps every mission has, plus a menu of trend models validated for transit searches. *Not* because it protects transits better than lightkurve's `flatten()` — measured, it doesn't; see notebook 03 §4 |
 | Period search | [transitleastsquares](https://github.com/hippke/tls) | TLS fits a real limb-darkened transit shape instead of BLS's box: ~10% better sensitivity to small planets, and a much sharper peak. Notebook 05 shows the difference |
 | Transit models | [batman](https://lkreidberg.github.io/batman/) | Analytic Mandel & Agol (2002) light curves, for fitting real depths |
 

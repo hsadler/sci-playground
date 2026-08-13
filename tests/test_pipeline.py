@@ -143,6 +143,33 @@ def test_sigma_clipping_is_what_protects_savgol_from_eating_the_transit(trending
     assert unclipped < clipped / 2, (clipped, unclipped)
 
 
+def test_local_robustness_cannot_protect_a_transit_that_fills_the_window(trending_lc):
+    """The counter-intuitive one, and the reason the docs stopped calling wotan safer.
+
+    At a window equal to the transit duration, lightkurve's sigma-clipped Savitzky-Golay
+    keeps most of the depth while wotan's biweight loses nearly all of it: clipping
+    judges outliers against a global trend, so in-transit points get excluded from the
+    fit, whereas the biweight judges them against their own local window, where they are
+    the majority and therefore not outliers at all.
+    """
+    from skyplay.vetting import vet
+
+    def depth(curve):
+        return vet(
+            curve.time.value, curve.flux.value, TRUE_PERIOD, TRUE_EPOCH, halfwidth=0.01
+        ).transit_depth
+
+    savgol, _ = detrend.savgol_flatten(trending_lc, window_days=TRUE_DURATION)
+    biweight, _ = detrend.biweight_flatten(trending_lc, window_days=TRUE_DURATION)
+
+    assert depth(savgol) > 2 * depth(biweight), (depth(savgol), depth(biweight))
+
+    # ...while at a sensible window (>~3x duration) the two agree closely.
+    wide_savgol, _ = detrend.savgol_flatten(trending_lc, window_days=0.5)
+    wide_biweight, _ = detrend.biweight_flatten(trending_lc, window_days=0.5)
+    assert depth(wide_savgol) == pytest.approx(depth(wide_biweight), rel=0.05)
+
+
 def test_too_narrow_a_window_destroys_the_transit(trending_lc):
     """Documents the failure mode: a window near the transit duration absorbs it."""
     from skyplay.vetting import vet

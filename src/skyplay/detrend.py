@@ -12,11 +12,39 @@ The usual rule of thumb is a window at least ~3x the transit duration.
 
 Two implementations here:
 
-- `savgol_flatten` — lightkurve's built-in `flatten()`, a Savitzky-Golay filter.
-  Fine, and what the earlier notebooks use.
-- `biweight_flatten` — wotan's Tukey biweight, which is *robust*: outlying points
-  (including in-transit points) get down-weighted rather than pulled through, so
-  it preserves transit depth noticeably better. This is the better default.
+- `savgol_flatten` — lightkurve's built-in `flatten()`, a Savitzky-Golay filter
+  wrapped in iterative sigma-clipping.
+- `biweight_flatten` — wotan's Tukey biweight, which down-weights outlying points
+  within each local window instead of being pulled through them.
+
+**Which preserves the transit better? Measured, not assumed.** Depth recovered for
+Kepler-8 b at matched windows, in ppm against a true ~8,750:
+
+======  ==================  ==============
+window  savgol (clipped)    wotan biweight
+======  ==================  ==============
+18.8 d              8,731            8,729
+ 2.0 d              8,741            8,751
+ 0.5 d              8,645            8,717
+0.25 d              8,555            8,131
+0.13 d              8,270              354
+======  ==================  ==============
+
+They are equivalent at any sensible window, and at aggressive ones **lightkurve
+wins outright** — the opposite of what "robust estimator" suggests. The reason is
+that the two robustness strategies fail differently. Sigma-clipping compares points
+against a trend fitted over the whole curve, so in-transit points look like outliers
+and get excluded from the fit. The biweight is *local*: inside a 0.13-day window
+sitting in a 0.13-day transit, in-transit points are the majority, so they define
+the local centre and are never down-weighted. **Local robustness cannot help when
+the feature you want to protect fills the window.**
+
+So do not choose between these expecting one to rescue a bad window. Choose the
+window — at least ~3x the transit duration — and either works. wotan earns its place
+for other reasons: windows in real time rather than cadence counts (which matters
+across the data gaps every real mission has), and a menu of trend models
+(``rspline``, ``hspline``, ``median``, ...) validated for transit searches by
+Hippke et al. (2019).
 
 **A units trap that will bite you.** lightkurve's ``flatten(window_length=...)``
 counts *cadences*; wotan's ``window_length=`` is in *days*. At Kepler's 30-minute
@@ -83,10 +111,16 @@ def biweight_flatten(
     window_days: float = 0.5,
     method: str = "biweight",
 ) -> tuple[lk.LightCurve, lk.LightCurve]:
-    """Robust detrend via wotan. Returns ``(flat, trend)`` as lightkurve objects.
+    """Locally-robust detrend via wotan. Returns ``(flat, trend)`` as lightkurve objects.
 
     ``window_days`` should be at least ~3x your expected transit duration. For a
     typical hot Jupiter (duration ~3 h) the 0.5 d default is about right.
+
+    Take that lower bound seriously here: unlike `savgol_flatten`, this has no
+    sigma-clipping pre-pass to fall back on, so a window near the transit duration
+    absorbs the transit almost completely (see the table in the module docstring —
+    354 ppm recovered from an 8,750 ppm transit at a 0.13 d window). Its robustness
+    is computed inside the window, and cannot protect a feature that fills it.
 
     Other useful ``method`` values: ``'rspline'`` (robust spline), ``'hspline'``,
     ``'median'``, ``'trim_mean'``. See the wotan docs for the full set.
