@@ -72,6 +72,10 @@ ignore = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+filterwarnings = [
+    # lightkurve's optional PRF-modelling submodule, which nothing here uses.
+    "ignore:.*tpfmodel submodule is not available.*:UserWarning",
+]
 markers = [
     "network: hits the MAST archive; deselect with -m 'not network'",
 ]

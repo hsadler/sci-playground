@@ -23,6 +23,22 @@ you actually use them.
 
 from __future__ import annotations
 
+import warnings
+
+# lightkurve warns at import time that its `tpfmodel` submodule is unavailable without
+# `oktopus`. That is an optional dependency used only for fitting PRF (pixel response
+# function) models to individual pixels -- nothing here does that, and oktopus is
+# unmaintained against current Python. The warning is pure noise, and alarming noise to
+# meet on your second notebook, so silence exactly that one message.
+#
+# Deliberately narrow: matched on the message text, so any *other* UserWarning from
+# lightkurve still reaches you. This runs before any submodule imports lightkurve.
+warnings.filterwarnings(
+    "ignore",
+    message=".*tpfmodel submodule is not available.*",
+    category=UserWarning,
+)
+
 __version__ = "0.1.0"
 
 __all__ = [
