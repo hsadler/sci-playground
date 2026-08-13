@@ -71,27 +71,39 @@ against live data and links out to further reading.
 
 1. **`00_light_and_light_curves.ipynb`** — the concepts from scratch using synthetic
    data you generate yourself: flux vs. magnitude, what a light curve is, transit
-   geometry (depth = (Rp/Rs)²), and why *folding* pulls a signal out of noise. No
-   downloads needed.
+   geometry (depth = (Rp/Rs)²), and why *folding* pulls a signal out of noise. Pure
+   numpy, written out by hand, no downloads. Ends by checking those hand-written
+   functions against `skyplay.synthetic` — they must agree exactly.
 2. **`01_finding_and_downloading_data.ipynb`** — real data: the Kepler/TESS missions,
-   the MAST archive, cadence and quarters/sectors, and the `LightCurve` object.
+   the MAST archive, cadence and quarters/sectors, and the `LightCurve` object. Uses
+   the raw `lightkurve` API, because that API *is* the lesson, then shows
+   `data.load_stitched` collapsing it to one cached line and verifies the two match.
 3. **`02_from_pixels_to_light_curve.ipynb`** — where the flux number comes from: target
-   pixel files, apertures, and aperture photometry.
-4. **`03_detrending_and_finding_periods.ipynb`** — cleaning systematics with `flatten()`,
-   and finding periods automatically with the BLS periodogram.
+   pixel files, apertures, and aperture photometry. Two apertures on the same star,
+   plotted on a shared y-axis so the noise difference is honest.
+4. **`03_detrending_and_finding_periods.ipynb`** — cleaning systematics, and finding
+   periods automatically with the BLS periodogram. Section 4 measures the classic
+   "too short a window eats the transit" failure and finds that lightkurve's
+   `flatten()` quietly defends against it by sigma-clipping first.
 5. **`04_false_positives_and_noise.ipynb`** — the most important skill: deciding whether
    a dip is *really* a planet. Eclipsing binaries, the odd–even test, contamination, and
    stellar variability — plus the vetting checklist. Most candidates are impostors.
 6. **`05_bls_vs_tls.ipynb`** — does the *shape* of the search template matter? Runs BLS
    and TLS over the same Kepler-8 curve and compares recovered period, peak sharpness,
-   and cost. Also the best worked example of using the `skyplay` package end-to-end.
+   and cost.
 7. **`kepler8b_transit_recovery.ipynb`** — *capstone.* The full pipeline run end-to-end
    and **validated against published values**: independently recovers Kepler-8 b's
-   orbital period (to ~0.005%) and planet/star radius ratio, and shows a real bug
-   (low-outlier clipping eating the transit) to build the habit of checking your answers.
+   orbital period (to ~0.005%) and radius ratio (to 0.6%), runs the vetting checks, and
+   flags a real bug (low-outlier clipping eating the transit) to build the habit of
+   checking your answers.
 
-By the end you can both **find** a transit signal (00–04) and **interrogate** it (04) —
-the two halves of a real detection.
+By the end you can both **find** a transit signal (00–03, capstone) and **interrogate**
+it (04) — the two halves of a real detection.
+
+Every notebook runs on `skyplay`. Notebooks 00 and 01 deliberately keep their
+hand-written and raw-`lightkurve` versions, since building the primitive yourself is the
+lesson there; each one then proves the package reproduces it exactly, so nothing is
+taken on faith.
 
 ## The `skyplay` package
 
