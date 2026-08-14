@@ -45,6 +45,7 @@ __all__ = [
     "cache",
     "data",
     "detrend",
+    "injection",
     "models",
     "periods",
     "plotting",

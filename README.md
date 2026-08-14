@@ -33,7 +33,9 @@ make run              # JupyterLab; `make notebook` for the classic interface
 
 ### 3. Open a notebook
 
-Start with the learning path below and run cells top to bottom with `Shift+Enter`.
+If astronomy itself is new to you, start with `primer/p1_whats_out_there.ipynb`.
+Otherwise start at `00_light_and_light_curves.ipynb` and run cells top to bottom with
+`Shift+Enter`.
 
 The notebooks import from `skyplay`, the project's own package (see
 [The `skyplay` package](#the-skyplay-package)). `make install` installs it in editable
@@ -63,6 +65,26 @@ worth knowing before you try to download a survey: [TIKE](https://timeseries.sci
 is a free JupyterHub that runs *next to* the MAST archive with lightkurve preinstalled,
 and Kepler/TESS are available as public datasets on AWS S3, which lightkurve can stream
 rather than download.
+
+## Primer — start here if you're new to astronomy
+
+`primer/` is a short, overview-level tour of the field, so the main path doesn't assume
+vocabulary you haven't met. Light on maths, and every claim it makes is computed or plotted
+from real data rather than asserted.
+
+1. **`primer/p1_whats_out_there.ipynb`** — the inventory of the universe, by scale: planets
+   through galaxy clusters, plus the transients that only time-domain astronomy can find.
+   Why distance *is* time, and which techniques answer which questions.
+2. **`primer/p2_stars.ipynb`** — the reference object for everything else. Temperature and
+   colour, the OBAFGKM sequence, why M dwarfs are both the commonest star and the best
+   transit target, and how stars end. Builds a real Hertzsprung–Russell diagram from 8,000
+   Gaia stars.
+3. **`primer/p3_how_we_observe.ipynb`** — the electromagnetic spectrum as a set of different
+   questions, why some telescopes must be in space, what aperture buys, and where
+   photometric noise comes from — including why a transit's difficulty scales as depth⁻².
+4. **`primer/p4_the_data.ipynb`** — what instruments actually hand you: FITS, and the four
+   data shapes (image, light curve, spectrum, catalogue) each with a real example. Ends on
+   the units and time conventions (BKJD vs BTJD) that cause the most silent errors.
 
 ## Learning path
 
@@ -96,6 +118,10 @@ against live data and links out to further reading.
    orbital period (to ~0.005%) and radius ratio (to 0.6%), runs the vetting checks, and
    flags a real bug (low-outlier clipping eating the transit) to build the habit of
    checking your answers.
+8. **`06_search_design.ipynb`** — how to run a search where *nobody* knows the answer.
+   Scoping a sample, and **injection–recovery**: measuring what your pipeline can and cannot
+   detect, because a search that finds nothing has told you nothing until you know what it
+   was capable of finding. Also archive cross-matching, and where a hobbyist reports things.
 
 By the end you can both **find** a transit signal (00–03, capstone) and **interrogate**
 it (04) — the two halves of a real detection.
@@ -119,6 +145,7 @@ fixed in one place.
 | `detrend` | wotan biweight and Savitzky–Golay, both taking windows in **days** |
 | `periods` | `bls_search` and `tls_search`, returning one comparable `PeriodSearch` type |
 | `vetting` | Secondary-eclipse, odd–even, dilution, and radius checks with a per-check verdict |
+| `injection` | Inject synthetic transits, mask real ones, and build a completeness map |
 | `plotting` | Consistent folded-curve and spectrum plots |
 | `models` | batman limb-darkened transit models |
 

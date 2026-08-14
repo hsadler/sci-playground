@@ -20,11 +20,21 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.colors import LinearSegmentedColormap
 
 from .periods import PeriodSearch
 from .synthetic import bin_curve, fold_phase
 
-__all__ = ["SERIES", "INK", "use_style", "plot_folded", "plot_spectrum", "compare_spectra"]
+__all__ = [
+    "SERIES",
+    "INK",
+    "SEQUENTIAL",
+    "use_style",
+    "plot_folded",
+    "plot_spectrum",
+    "compare_spectra",
+    "plot_recovery_map",
+]
 
 #: Categorical series colors, in fixed order. Do not cycle or reorder — slot
 #: identity is what keeps the same method the same color across every figure.
@@ -38,6 +48,14 @@ INK = {
     "grid": "#d8d7d2",
     "cloud": "#b4b3ae",
 }
+
+
+#: Sequential ramp for magnitude, built as one hue light->dark from `SERIES[0]`.
+#: Deliberately not a rainbow: a multi-hue ramp implies category boundaries that a
+#: continuous quantity does not have, and reads in the wrong order for many viewers.
+SEQUENTIAL = LinearSegmentedColormap.from_list(
+    "skyplay_blue", ["#f2f6fc", "#c3d8f2", "#87b0e3", "#4a89d6", "#2a78d6", "#164a88"]
+)
 
 
 def use_style() -> None:
@@ -212,3 +230,51 @@ def compare_spectra(results: list[PeriodSearch], *, published: float | None = No
     for ax in axes[:-1, 0]:
         ax.set_xlabel("")
     return fig
+
+
+def plot_recovery_map(rmap, *, ax: plt.Axes | None = None, title: str | None = None) -> plt.Axes:
+    """Heatmap of a `skyplay.injection.RecoveryMap`.
+
+    Every cell is labelled with its percentage as well as shaded. That is deliberate: a
+    colour scale alone makes readers estimate values from a legend, the shading is
+    unreadable for anyone with reduced colour vision, and the exact numbers are the point
+    here — you are reading off a detection floor, not admiring a gradient.
+    """
+    if ax is None:
+        _, ax = plt.subplots(figsize=(1.4 * len(rmap.periods) + 3, 0.8 * len(rmap.depths) + 2.4))
+
+    ax.imshow(
+        rmap.fraction,
+        cmap=SEQUENTIAL,
+        vmin=0.0,
+        vmax=1.0,
+        origin="lower",
+        aspect="auto",
+    )
+
+    ax.set_xticks(range(len(rmap.periods)), [f"{p:g}" for p in rmap.periods])
+    ax.set_yticks(range(len(rmap.depths)), [f"{d * 1e6:.0f}" for d in rmap.depths])
+    ax.set_xlabel("Injected period (days)")
+    ax.set_ylabel("Injected depth (ppm)")
+    ax.set_title(title or f"Recovery fraction ({rmap.n_trials} epochs per cell)")
+
+    for i in range(rmap.fraction.shape[0]):
+        for j in range(rmap.fraction.shape[1]):
+            value = rmap.fraction[i, j]
+            # Ink flips to light only where the fill is dark enough to need it.
+            colour = "#ffffff" if value > 0.55 else INK["primary"]
+            ax.text(
+                j,
+                i,
+                f"{value * 100:.0f}%",
+                ha="center",
+                va="center",
+                color=colour,
+                fontsize=9,
+                fontweight="bold",
+            )
+
+    ax.grid(False)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    return ax
