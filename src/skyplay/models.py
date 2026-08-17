@@ -28,6 +28,7 @@ __all__ = [
     "a_rs_from_duration",
     "a_rs_from_density",
     "transit_duration",
+    "planet_radius_earth",
 ]
 
 #: Mean density of the Sun, kg/m^3. Stellar densities below are quoted relative to it.
@@ -149,3 +150,40 @@ def a_rs_from_duration(period: float, duration: float, rp_rs: float = 0.0) -> fl
     if duration <= 0 or period <= 0:
         raise ValueError("period and duration must be positive")
     return float((1.0 + rp_rs) * period / (np.pi * duration))
+
+
+def planet_radius_earth(depth: float, stellar_radius_rsun: float) -> float:
+    """Planet radius in Earth radii, from a transit depth and the star's radius.
+
+    This is the conversion that turns a measurement into something you can care about.
+    A depth is a *ratio* — it says how much light was blocked, not how big the blocker
+    was — so the same dip means wildly different planets on different stars::
+
+        Rp = sqrt(depth) * Rs
+
+    A 500 ppm transit is a 3.6 Earth-radii planet on Kepler-8 (1.49 Rsun) and a 0.73
+    Earth-radii planet on a 0.30 Rsun M dwarf. Identical data, identical pipeline,
+    sub-Earth versus small-Neptune. That is the quantitative form of "small cool stars
+    are the best transit targets".
+
+    Two caveats, both of which make this an *upper* bound in practice:
+
+    - **Dilution.** Extra light in the aperture makes the dip shallower than it truly is,
+      so the real planet is larger than this returns (see `skyplay.vetting.dilute_depth`).
+    - **Limb darkening.** The observed central depth runs deeper than the geometric
+      ``(Rp/Rs)**2``, so feeding a measured central depth in here overestimates the radius
+      slightly. Fitting a real model is the fix when it matters.
+
+    And it inherits the uncertainty on ``stellar_radius_rsun``, which for most stars comes
+    from a model rather than a direct measurement. A 10% error on the star is a 10% error
+    on the planet.
+    """
+    if depth < 0:
+        raise ValueError(f"depth must be non-negative, got {depth}")
+    if stellar_radius_rsun <= 0:
+        raise ValueError(f"stellar radius must be positive, got {stellar_radius_rsun}")
+
+    from astropy import units as u
+
+    rsun_in_rearth = (1 * u.Rsun).to_value(u.Rearth)
+    return float(np.sqrt(depth) * stellar_radius_rsun * rsun_in_rearth)

@@ -177,3 +177,40 @@ def test_recovery_grid_accepts_a_custom_pipeline(quiet_lc):
         quiet_lc, periods=(4.0,), depths=(2e-3,), n_trials=2, pipeline=pipeline, rng=1
     )
     assert len(calls) == 2
+
+
+# ------------------------------------------------------ depth -> planet radius
+
+
+def test_depth_converts_to_a_planet_radius():
+    """Kepler-8 b: 8,400 ppm on a 1.49 Rsun star. Archive says 15.9 Earth radii."""
+    assert models.planet_radius_earth(8.4e-3, 1.49) == pytest.approx(15.9, rel=0.1)
+
+
+def test_earth_across_the_sun_is_one_earth_radius():
+    """The definitional check: 84 ppm on a 1 Rsun star must give ~1 Re."""
+    assert models.planet_radius_earth(8.4e-5, 1.0) == pytest.approx(1.0, rel=0.02)
+
+
+def test_the_same_depth_is_a_much_smaller_planet_on_a_smaller_star():
+    """The quantitative form of 'M dwarfs are the best transit targets'."""
+    on_f_star = models.planet_radius_earth(5e-4, 1.49)
+    on_m_dwarf = models.planet_radius_earth(5e-4, 0.30)
+    assert on_f_star == pytest.approx(3.63, rel=0.02)
+    assert on_m_dwarf == pytest.approx(0.73, rel=0.02)
+    # Radius scales linearly with the star, so the ratio is just the radius ratio.
+    assert on_f_star / on_m_dwarf == pytest.approx(1.49 / 0.30, rel=1e-6)
+
+
+def test_radius_scales_as_sqrt_depth():
+    """4x the depth is 2x the radius -- the (Rp/Rs)^2 relation, inverted."""
+    assert models.planet_radius_earth(4e-4, 1.0) == pytest.approx(
+        2 * models.planet_radius_earth(1e-4, 1.0), rel=1e-9
+    )
+
+
+def test_planet_radius_rejects_impossible_input():
+    with pytest.raises(ValueError, match="depth"):
+        models.planet_radius_earth(-1e-4, 1.0)
+    with pytest.raises(ValueError, match="stellar radius"):
+        models.planet_radius_earth(1e-4, 0.0)

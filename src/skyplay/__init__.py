@@ -23,6 +23,7 @@ you actually use them.
 
 from __future__ import annotations
 
+import logging
 import warnings
 
 # lightkurve warns at import time that its `tpfmodel` submodule is unavailable without
@@ -38,6 +39,23 @@ warnings.filterwarnings(
     message=".*tpfmodel submodule is not available.*",
     category=UserWarning,
 )
+
+
+# lightkurve also complains that "`period` contains N points" whenever you hand
+# `to_periodogram` your own grid. Note this one is emitted with `log.warning`, not
+# `warnings.warn`, so a warnings filter does nothing -- it needs a logging filter on the
+# specific logger (filters do not apply to records propagated from child loggers).
+#
+# The message is simply wrong for our usage: lightkurve computes N from the *default* grid
+# it built before noticing you supplied `period`, and `len(result.raw.period)` confirms
+# only your grid is evaluated. Harmless once, but `injection.recovery_grid` runs 80+
+# searches and the repeats bury the notebook's real output.
+class _DropBogusPeriodogramSizeWarning(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:  # noqa: A003
+        return "Periodogram is likely to be large" not in record.getMessage()
+
+
+logging.getLogger("lightkurve.periodogram").addFilter(_DropBogusPeriodogramSizeWarning())
 
 __version__ = "0.1.0"
 
