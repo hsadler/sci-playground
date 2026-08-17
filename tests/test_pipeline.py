@@ -256,3 +256,52 @@ def test_a_rs_estimate_reproduces_the_duration_it_came_from():
 def test_a_rs_from_duration_rejects_nonsense():
     with pytest.raises(ValueError):
         models.a_rs_from_duration(period=3.5, duration=0.0)
+
+
+def test_robust_noise_estimator_ignores_transits_and_the_naive_one_does_not(trending_lc):
+    """Complementary blind spots, part 1: MAD ignores transits, successive-difference
+    does not.
+
+    The successive-difference estimator is robust to slow trends but not to sharp
+    features, and transit ingress/egress are exactly that. Measured on real Kepler-8 data
+    it reads 520 ppm against a true ~215, because it is measuring the transit it is meant
+    to be compared against.
+    """
+    # biweight at 0.5 d genuinely flattens this fixture's 12-day trend.
+    flat, _ = detrend.biweight_flatten(trending_lc, window_days=0.5)
+
+    robust = detrend.estimate_noise(flat, robust=True)
+    naive = detrend.estimate_noise(flat, robust=False)
+
+    assert robust == pytest.approx(NOISE, rel=0.2), (robust, NOISE)
+    assert naive > 2 * robust, (naive, robust)
+
+
+def test_noise_estimators_agree_once_the_transits_are_masked(trending_lc):
+    from skyplay import injection
+
+    masked = injection.mask_transits(trending_lc, TRUE_PERIOD, TRUE_EPOCH, TRUE_DURATION)
+    flat, _ = detrend.biweight_flatten(masked, window_days=0.5)
+
+    naive = detrend.estimate_noise(flat, robust=False)
+    assert naive == pytest.approx(NOISE, rel=0.2)
+    assert naive == pytest.approx(detrend.estimate_noise(flat, robust=True), rel=0.2)
+
+
+def test_mad_estimator_is_fooled_by_a_trend_that_survived_detrending(trending_lc):
+    """Complementary blind spots, part 2, and the reason estimate_noise documents both.
+
+    MAD assumes the curve is already flat. Detrend this fixture with an 18.8-day window
+    and its 12-day trend survives untouched, so MAD reports the leftover trend amplitude
+    (~1.7%) rather than the ~300 ppm noise -- off by fifty times. The
+    successive-difference estimator, which differences neighbours, is unbothered.
+    """
+    flat, _ = detrend.savgol_flatten(trending_lc, window_days=18.8)
+
+    assert detrend.estimate_noise(flat, robust=True) > 10 * NOISE
+    assert detrend.estimate_noise(flat, robust=False) < 5 * NOISE
+
+
+def test_estimate_noise_needs_enough_points(planet_lc):
+    with pytest.raises(ValueError, match="at least 3"):
+        detrend.estimate_noise(planet_lc[:2])
