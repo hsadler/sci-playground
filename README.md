@@ -34,13 +34,28 @@ make run              # JupyterLab; `make notebook` for the classic interface
 ### 3. Open a notebook
 
 If astronomy itself is new to you, start with [`p1_whats_out_there.ipynb`](primer/p1_whats_out_there.ipynb).
-Otherwise start at [`00_light_and_light_curves.ipynb`](00_light_and_light_curves.ipynb) and run cells top to bottom with
+Otherwise start at [`00_light_and_light_curves.ipynb`](course/00_light_and_light_curves.ipynb) and run cells top to bottom with
 `Shift+Enter`.
 
 The notebooks import from `skyplay`, the project's own package (see
 [The `skyplay` package](#the-skyplay-package)). `make install` installs it in editable
 mode, so your edits to `src/skyplay/` are picked up on the next kernel restart with no
 reinstall.
+
+## Layout
+
+```
+primer/         astronomy from zero - what's out there, and how it's observed
+course/         the transit-hunting path, 00 through 06 plus the capstone
+explorations/   open-ended searches: your own targets, no answer key
+src/skyplay/    the package the notebooks call
+tests/          93 tests, all offline
+```
+
+The split is by **whether there is a right answer**. `primer/` and `course/` are finished
+teaching material validated against published values, so if something there disagrees with
+the literature it is a bug. `explorations/` is the opposite: real searches where a null
+result is the expected outcome - see [explorations/README.md](explorations/README.md).
 
 ## The stack
 
@@ -86,39 +101,39 @@ from real data rather than asserted.
    data shapes (image, light curve, spectrum, catalogue) each with a real example. Ends on
    the units and time conventions (BKJD vs BTJD) that cause the most silent errors.
 
-## Learning path
+## Course
 
-New to observational astronomy? Work through these in order. Each one runs end-to-end
+In `course/`. Work through these in order. Each one runs end-to-end
 against live data and links out to further reading.
 
-1. **[`00_light_and_light_curves.ipynb`](00_light_and_light_curves.ipynb)** — the concepts from scratch using synthetic
+1. **[`00_light_and_light_curves.ipynb`](course/00_light_and_light_curves.ipynb)** — the concepts from scratch using synthetic
    data you generate yourself: flux vs. magnitude, what a light curve is, transit
    geometry (depth = (Rp/Rs)²), and why *folding* pulls a signal out of noise. Pure
    numpy, written out by hand, no downloads. Ends by checking those hand-written
    functions against `skyplay.synthetic` — they must agree exactly.
-2. **[`01_finding_and_downloading_data.ipynb`](01_finding_and_downloading_data.ipynb)** — real data: the Kepler/TESS missions,
+2. **[`01_finding_and_downloading_data.ipynb`](course/01_finding_and_downloading_data.ipynb)** — real data: the Kepler/TESS missions,
    the MAST archive, cadence and quarters/sectors, and the `LightCurve` object. Uses
    the raw `lightkurve` API, because that API *is* the lesson, then shows
    `data.load_stitched` collapsing it to one cached line and verifies the two match.
-3. **[`02_from_pixels_to_light_curve.ipynb`](02_from_pixels_to_light_curve.ipynb)** — where the flux number comes from: target
+3. **[`02_from_pixels_to_light_curve.ipynb`](course/02_from_pixels_to_light_curve.ipynb)** — where the flux number comes from: target
    pixel files, apertures, and aperture photometry. Two apertures on the same star,
    plotted on a shared y-axis so the noise difference is honest.
-4. **[`03_detrending_and_finding_periods.ipynb`](03_detrending_and_finding_periods.ipynb)** — cleaning systematics, and finding
+4. **[`03_detrending_and_finding_periods.ipynb`](course/03_detrending_and_finding_periods.ipynb)** — cleaning systematics, and finding
    periods automatically with the BLS periodogram. Section 4 measures the classic
    "too short a window eats the transit" failure and finds that lightkurve's
    `flatten()` quietly defends against it by sigma-clipping first.
-5. **[`04_false_positives_and_noise.ipynb`](04_false_positives_and_noise.ipynb)** — the most important skill: deciding whether
+5. **[`04_false_positives_and_noise.ipynb`](course/04_false_positives_and_noise.ipynb)** — the most important skill: deciding whether
    a dip is *really* a planet. Eclipsing binaries, the odd–even test, contamination, and
    stellar variability — plus the vetting checklist. Most candidates are impostors.
-6. **[`05_bls_vs_tls.ipynb`](05_bls_vs_tls.ipynb)** — does the *shape* of the search template matter? Runs BLS
+6. **[`05_bls_vs_tls.ipynb`](course/05_bls_vs_tls.ipynb)** — does the *shape* of the search template matter? Runs BLS
    and TLS over the same Kepler-8 curve and compares recovered period, peak sharpness,
    and cost.
-7. **[`kepler8b_transit_recovery.ipynb`](kepler8b_transit_recovery.ipynb)** — *capstone.* The full pipeline run end-to-end
+7. **[`kepler8b_transit_recovery.ipynb`](course/kepler8b_transit_recovery.ipynb)** — *capstone.* The full pipeline run end-to-end
    and **validated against published values**: independently recovers Kepler-8 b's
    orbital period (to ~0.005%) and radius ratio (to 0.6%), runs the vetting checks, and
    flags a real bug (low-outlier clipping eating the transit) to build the habit of
    checking your answers.
-8. **[`06_search_design.ipynb`](06_search_design.ipynb)** — how to run a search where *nobody* knows the answer.
+8. **[`06_search_design.ipynb`](course/06_search_design.ipynb)** — how to run a search where *nobody* knows the answer.
    Scoping a sample, and **injection–recovery**: measuring what your pipeline can and cannot
    detect, because a search that finds nothing has told you nothing until you know what it
    was capable of finding. Also archive cross-matching, and where a hobbyist reports things.
@@ -192,7 +207,7 @@ It's a per-clone git config, so run it once:
 make setup-git-filter
 ```
 
-Concretely: [`03_detrending_and_finding_periods.ipynb`](03_detrending_and_finding_periods.ipynb) is ~330 KB on disk with its
+Concretely: [`03_detrending_and_finding_periods.ipynb`](course/03_detrending_and_finding_periods.ipynb) is ~330 KB on disk with its
 figures and ~15 KB as far as git is concerned. Re-executing it top to bottom leaves
 `git diff` **empty** and stages nothing — outputs can't be committed even by accident.
 

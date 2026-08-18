@@ -54,7 +54,10 @@ check: lint test  ## Lint then test — run this before committing
 # use nbdime directly instead: uv run nbdiff a.ipynb b.ipynb
 
 nb-strip:  ## Also strip outputs from the files on disk (the filter only affects git)
-	uv run nbstripout *.ipynb
+	@# Ask git for the notebook list rather than shell-globbing: notebooks live in
+	@# primer/, course/ and explorations/, and `*.ipynb` would only match the root.
+	@files=$$(git ls-files '*.ipynb'); \
+	if [ -n "$$files" ]; then uv run nbstripout $$files; else echo "no notebooks tracked"; fi
 
 clean-cache:  ## Delete cached derived light curves (they will be rebuilt on demand)
 	rm -rf data/cache
