@@ -48,6 +48,7 @@ reinstall.
 primer/         astronomy from zero - what's out there, and how it's observed
 course/         the transit-hunting path, 00 through 06 plus the capstone
 explorations/   open-ended searches: your own targets, no answer key
+IDEAS.md        candidate projects, with the research already attached
 src/skyplay/    the package the notebooks call
 tests/          93 tests, all offline
 ```
