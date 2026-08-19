@@ -1,5 +1,7 @@
 # Explorations
 
+[← repo overview](../README.md)
+
 Where the actual work goes. `primer/` and `course/` are finished teaching material with
 known answers; this is the opposite — open-ended searches on targets nobody has handed you.
 

@@ -83,68 +83,34 @@ rather than download.
 
 ## Primer — start here if you're new to astronomy
 
-`primer/` is a short, overview-level tour of the field, so the main path doesn't assume
-vocabulary you haven't met. Light on maths, and every claim it makes is computed or plotted
-from real data rather than asserted.
+Four short notebooks in [`primer/`](primer/README.md) so the course doesn't assume
+vocabulary you haven't met. Every claim is computed or plotted from real data.
 
-1. **[`p1_whats_out_there.ipynb`](primer/p1_whats_out_there.ipynb)** — the inventory of the universe, by scale: planets
-   through galaxy clusters, plus the transients that only time-domain astronomy can find.
-   Why distance *is* time, and which techniques answer which questions.
-2. **[`p2_stars.ipynb`](primer/p2_stars.ipynb)** — the reference object for everything else. Temperature and
-   colour, the OBAFGKM sequence, why M dwarfs are both the commonest star and the best
-   transit target, and how stars end. Builds a real Hertzsprung–Russell diagram from 8,000
-   Gaia stars.
-3. **[`p3_how_we_observe.ipynb`](primer/p3_how_we_observe.ipynb)** — the electromagnetic spectrum as a set of different
-   questions, why some telescopes must be in space, what aperture buys, and where
-   photometric noise comes from — including why a transit's difficulty scales as depth⁻².
-4. **[`p4_the_data.ipynb`](primer/p4_the_data.ipynb)** — what instruments actually hand you: FITS, and the four
-   data shapes (image, light curve, spectrum, catalogue) each with a real example. Ends on
-   the units and time conventions (BKJD vs BTJD) that cause the most silent errors.
+1. [`p1_whats_out_there.ipynb`](primer/p1_whats_out_there.ipynb) — the inventory of the universe, by scale, and why distance *is* time.
+2. [`p2_stars.ipynb`](primer/p2_stars.ipynb) — the reference object for everything else, with an HR diagram built from 8,000 Gaia stars.
+3. [`p3_how_we_observe.ipynb`](primer/p3_how_we_observe.ipynb) — the spectrum, telescopes, and where photometric noise comes from.
+4. [`p4_the_data.ipynb`](primer/p4_the_data.ipynb) — FITS, the four shapes data comes in, and the time conventions that cause silent errors.
 
 ## Course
 
-In `course/`. Work through these in order. Each one runs end-to-end
-against live data and links out to further reading.
+Eight notebooks in [`course/`](course/README.md), in order. Half of it is about finding a
+signal and half about doubting it, because most transit-like signals are not planets.
 
-1. **[`00_light_and_light_curves.ipynb`](course/00_light_and_light_curves.ipynb)** — the concepts from scratch using synthetic
-   data you generate yourself: flux vs. magnitude, what a light curve is, transit
-   geometry (depth = (Rp/Rs)²), and why *folding* pulls a signal out of noise. Pure
-   numpy, written out by hand, no downloads. Ends by checking those hand-written
-   functions against `skyplay.synthetic` — they must agree exactly.
-2. **[`01_finding_and_downloading_data.ipynb`](course/01_finding_and_downloading_data.ipynb)** — real data: the Kepler/TESS missions,
-   the MAST archive, cadence and quarters/sectors, and the `LightCurve` object. Uses
-   the raw `lightkurve` API, because that API *is* the lesson, then shows
-   `data.load_stitched` collapsing it to one cached line and verifies the two match.
-3. **[`02_from_pixels_to_light_curve.ipynb`](course/02_from_pixels_to_light_curve.ipynb)** — where the flux number comes from: target
-   pixel files, apertures, and aperture photometry. Two apertures on the same star,
-   plotted on a shared y-axis so the noise difference is honest.
-4. **[`03_detrending_and_finding_periods.ipynb`](course/03_detrending_and_finding_periods.ipynb)** — cleaning systematics, and finding
-   periods automatically with the BLS periodogram. Section 4 measures the classic
-   "too short a window eats the transit" failure and finds that lightkurve's
-   `flatten()` quietly defends against it by sigma-clipping first.
-5. **[`04_false_positives_and_noise.ipynb`](course/04_false_positives_and_noise.ipynb)** — the most important skill: deciding whether
-   a dip is *really* a planet. Eclipsing binaries, the odd–even test, contamination, and
-   stellar variability — plus the vetting checklist. Most candidates are impostors.
-6. **[`05_bls_vs_tls.ipynb`](course/05_bls_vs_tls.ipynb)** — does the *shape* of the search template matter? Runs BLS
-   and TLS over the same Kepler-8 curve and compares recovered period, peak sharpness,
-   and cost.
-7. **[`kepler8b_transit_recovery.ipynb`](course/kepler8b_transit_recovery.ipynb)** — *capstone.* The full pipeline run end-to-end
-   and **validated against published values**: independently recovers Kepler-8 b's
-   orbital period (to ~0.005%) and radius ratio (to 0.6%), runs the vetting checks, and
-   flags a real bug (low-outlier clipping eating the transit) to build the habit of
-   checking your answers.
-8. **[`06_search_design.ipynb`](course/06_search_design.ipynb)** — how to run a search where *nobody* knows the answer.
-   Scoping a sample, and **injection–recovery**: measuring what your pipeline can and cannot
-   detect, because a search that finds nothing has told you nothing until you know what it
-   was capable of finding. Also archive cross-matching, and where a hobbyist reports things.
+1. [`00_light_and_light_curves.ipynb`](course/00_light_and_light_curves.ipynb) — the concepts from scratch in pure numpy, no downloads.
+2. [`01_finding_and_downloading_data.ipynb`](course/01_finding_and_downloading_data.ipynb) — real data: the missions, the MAST archive, and the `LightCurve` object.
+3. [`02_from_pixels_to_light_curve.ipynb`](course/02_from_pixels_to_light_curve.ipynb) — where the flux number comes from: pixels, apertures, photometry.
+4. [`03_detrending_and_finding_periods.ipynb`](course/03_detrending_and_finding_periods.ipynb) — removing trends without removing the transit, then BLS.
+5. [`04_false_positives_and_noise.ipynb`](course/04_false_positives_and_noise.ipynb) — **the most important one**: deciding whether a dip is really a planet.
+6. [`05_bls_vs_tls.ipynb`](course/05_bls_vs_tls.ipynb) — does the shape of the search template matter?
+7. [`kepler8b_transit_recovery.ipynb`](course/kepler8b_transit_recovery.ipynb) — **capstone**: the whole pipeline, validated against published values.
+8. [`06_search_design.ipynb`](course/06_search_design.ipynb) — running a search where nobody knows the answer, and measuring what you *can't* see.
 
-By the end you can both **find** a transit signal (00–03, capstone) and **interrogate**
-it (04) — the two halves of a real detection.
+Per-notebook runtimes, which ones need the network, and how the arc fits together are in
+[`course/README.md`](course/README.md).
 
-Every notebook runs on `skyplay`. Notebooks 00 and 01 deliberately keep their
-hand-written and raw-`lightkurve` versions, since building the primitive yourself is the
-lesson there; each one then proves the package reproduces it exactly, so nothing is
-taken on faith.
+Notebooks 00 and 01 deliberately keep their hand-written and raw-`lightkurve` versions,
+since building the primitive yourself is the lesson there; each then proves `skyplay`
+reproduces it exactly, so nothing is taken on faith.
 
 ## The `skyplay` package
 
