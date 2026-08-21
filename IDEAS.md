@@ -131,6 +131,17 @@ even that: pull a DASCH light curve for a star we already understand and look at
 years of plates actually looks like — **done**, see
 [`explorations/ry_cnc_century_of_plates.ipynb`](explorations/ry_cnc_century_of_plates.ipynb).
 
+**Dispute reproduced** — see
+[`explorations/boyajian_dimming_or_menzel_gap.ipynb`](explorations/boyajian_dimming_or_menzel_gap.ipynb).
+Both sides check out: Schaefer's slope reproduces almost exactly (+0.166 vs his 0.164 ± 0.013
+mag/century), but it decomposes into a flat pre-gap era (+0.02) plus a +0.09 mag step across
+the Menzel Gap, and 14 brightness/color-matched control stars under the identical pipeline
+show slope scatter of 0.14 mag/century — an order of magnitude above Schaefer's quoted error.
+Defended opinion: the data are as Schaefer says, but DASCH alone cannot separate his trend
+from a gap systematic; Hippke/Lund's caution is the better-supported reading. Next layer, if
+resumed: the gap-*step* ensemble test (target's step vs the distribution of control steps),
+and per-plate forensics with cutouts.
+
 ---
 
 ## Not yet researched
