@@ -17,6 +17,10 @@ dependencies = [
     "astropy>=6.1",
     "astroquery>=0.4.7",       # MAST / SIMBAD / Vizier / NASA Exoplanet Archive
     "lightkurve>=2.5",
+    # --- century-baseline plate photometry ---
+    # daschlab needs pycairo, which has no macOS wheels; before `uv sync` run:
+    #   brew install cairo pkgconf
+    "daschlab>=1.0.0",
     # --- transit hunting ---
     "transitleastsquares>=1.0.31",  # TLS: shape-aware period search, beats BLS
     "wotan>=1.10",                  # detrending that does not eat transits

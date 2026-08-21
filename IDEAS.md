@@ -128,7 +128,8 @@ above.
 both sides published, so there is ground truth on a contested question. Getting to a defended
 opinion on who is right builds the exact systematics intuition the dataset demands. Before
 even that: pull a DASCH light curve for a star we already understand and look at what 110
-years of plates actually looks like.
+years of plates actually looks like — **done**, see
+[`explorations/ry_cnc_century_of_plates.ipynb`](explorations/ry_cnc_century_of_plates.ipynb).
 
 ---
 
