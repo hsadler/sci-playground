@@ -47,13 +47,14 @@ reinstall.
 ```
 primer/         astronomy from zero - what's out there, and how it's observed
 course/         the transit-hunting path, 00 through 06 plus the capstone
-explorations/   open-ended searches: your own targets, no answer key
+tour/           the grand tour: see each kind of object, its data, and its frontier
+explorations/   open-ended searches and reproductions: real targets, no answer key
 IDEAS.md        candidate projects, with the research already attached
 src/skyplay/    the package the notebooks call
 tests/          93 tests, all offline
 ```
 
-The split is by **whether there is a right answer**. `primer/` and `course/` are finished
+The split is by **whether there is a right answer**. `primer/`, `course/` and `tour/` are
 teaching material validated against published values, so if something there disagrees with
 the literature it is a bug. `explorations/` is the opposite: real searches where a null
 result is the expected outcome - see [explorations/README.md](explorations/README.md).
@@ -108,6 +109,15 @@ signal and half about doubting it, because most transit-like signals are not pla
 
 Per-notebook runtimes, which ones need the network, and how the arc fits together are in
 [`course/README.md`](course/README.md).
+
+## The grand tour
+
+The course goes deep on one method; [`tour/`](tour/README.md) goes *wide* on the sky. Each
+stop takes one class of object and answers, with live archive data: what does it look like
+(in every band that matters)? What data does it produce? What's genuinely unknown about it,
+and which instrument is about to change that? Start at
+[`t01_one_sky_many_eyes.ipynb`](tour/t01_one_sky_many_eyes.ipynb) — the Crab Nebula from
+radio to gamma rays — and follow the itinerary in [`tour/README.md`](tour/README.md).
 
 Notebooks 00 and 01 deliberately keep their hand-written and raw-`lightkurve` versions,
 since building the primitive yourself is the lesson there; each then proves `skyplay`
