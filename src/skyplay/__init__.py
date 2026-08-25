@@ -57,6 +57,20 @@ class _DropBogusPeriodogramSizeWarning(logging.Filter):
 
 logging.getLogger("lightkurve.periodogram").addFilter(_DropBogusPeriodogramSizeWarning())
 
+# Imported *after* the warning filters above on purpose: the submodules import lightkurve,
+# and some of the warnings being silenced fire at lightkurve import time.
+from . import (  # noqa: E402
+    cache,
+    data,
+    detrend,
+    injection,
+    models,
+    periods,
+    plotting,
+    synthetic,
+    vetting,
+)
+
 __version__ = "0.1.0"
 
 __all__ = [

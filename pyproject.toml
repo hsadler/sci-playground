@@ -50,6 +50,7 @@ dev = [
     "nbstripout>=0.8",   # opt-in output stripping, see `make nb-strip`
     "pytest>=8.3",
     "ruff>=0.7",
+    "pyright>=1.1.411",  # verifies skyplay's type hints; see [tool.pyright]
 ]
 
 [build-system]
@@ -64,14 +65,27 @@ line-length = 100
 src = ["src", "tests"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "NPY"]
+select = ["E", "F", "I", "UP", "B", "NPY", "ANN"]
 ignore = [
     "E501", # long lines: docstrings here quote formulae and URLs
     "B008", # function call in default arg: fine for astropy units
+    "ANN401", # `Any` is the honest type for **kwargs passed through to untyped libraries
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"*.ipynb" = ["E402", "F401"] # notebooks import mid-file and for side effects
+"*.ipynb" = ["E402", "F401", "ANN"] # notebooks import mid-file and for side effects
+"tests/*" = ["ANN"]                  # test functions: the signature is never the point
+
+[tool.pyright]
+# Verifies that skyplay's type hints are true, not just present. Runs in `make check`.
+include = ["src"]
+pythonVersion = "3.13"
+typeCheckingMode = "basic"
+reportMissingTypeStubs = false      # astropy / lightkurve / wotan ship no stubs
+# Trust declared types only. lightkurve has none, and pyright guessing them from its
+# source produces false errors (e.g. `remove_nans()` "returning a Row"). Our own
+# annotations are still fully checked against each other.
+useLibraryCodeForTypes = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

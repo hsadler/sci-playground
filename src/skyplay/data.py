@@ -17,6 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import lightkurve as lk
+from lightkurve import KeplerTargetPixelFile, LightCurve
 
 from .cache import cached
 
@@ -111,7 +112,7 @@ def load_stitched(
     quality_bitmask: str = "default",
     use_cache: bool = True,
     refresh: bool = False,
-) -> lk.LightCurve:
+) -> LightCurve:
     """Download several quarters, normalize each, concatenate, and drop NaNs.
 
     Stitching normalizes each quarter to its own median before concatenating.
@@ -126,7 +127,7 @@ def load_stitched(
     """
     tgt = resolve(target)
 
-    def build() -> lk.LightCurve:
+    def build() -> LightCurve:
         result = search(tgt, author=author, cadence=cadence, quarter=list(quarters))
         if len(result) == 0:
             raise LookupError(
@@ -151,7 +152,7 @@ def load_tpf(
     quarter: int = 4,
     author: str = "Kepler",
     cadence: str = "long",
-) -> lk.KeplerTargetPixelFile:
+) -> KeplerTargetPixelFile:
     """Download a single Target Pixel File — the actual images behind the flux.
 
     Not cached here: lightkurve already caches the raw FITS download, and a TPF is

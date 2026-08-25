@@ -164,11 +164,33 @@ Two gotchas the package exists to absorb:
 ## Development
 
 ```sh
-make check       # lint + tests
+make check       # lint + type-check + tests
 make test        # offline tests only
 make fmt         # ruff format + autofix
 make clean-cache # drop cached derived light curves
 ```
+
+### Type hints: every signature, verified
+
+Every function in `skyplay` has a fully annotated signature — ruff's `ANN` rules fail the
+lint if one is missing — and `pyright` runs in `make lint` to check that the hints are
+*true*, not merely present. An unverified hint that has drifted from the code is worse than
+none: it lies with authority.
+
+Two deliberate choices, because the bugs that actually bite in this codebase are about
+**units and shape**, which type hints cannot express:
+
+- **Variables are annotated only where the type is non-obvious** (`relpath: str | None`,
+  where the `None` is the whole point), not mechanically on every line. `x: np.ndarray`
+  says nothing useful; `# (n_cadences,) in days` does.
+- **Units live in names**: `window_days`, `slope_mag_per_century`, `parallax_mas`. Passing
+  a cadence count into a `_days` parameter should look wrong on the page — see the
+  detrending-window gotcha above for why.
+
+Notebook code is exempt from `ANN` (it is narrative, and its helper functions are typed by
+hand where that helps the reader), and pyright trusts *declared* library types only —
+lightkurve ships none, and letting the checker guess them from source produces false
+errors.
 
 ### Notebook outputs never show up as git changes
 

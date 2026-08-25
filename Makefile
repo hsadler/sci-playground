@@ -39,9 +39,10 @@ test:  ## Run the test suite (offline only)
 test-all:  ## Run every test, including ones that hit the MAST archive
 	uv run pytest
 
-lint:  ## Check formatting and lint rules
+lint:  ## Check formatting, lint rules, and that skyplay's type hints are true
 	uv run ruff check src tests
 	uv run ruff format --check src tests
+	uv run pyright
 
 fmt:  ## Auto-format and auto-fix
 	uv run ruff format src tests

@@ -26,8 +26,8 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 
-import lightkurve as lk
 import numpy as np
+from lightkurve import LightCurve
 
 __all__ = ["PeriodSearch", "DEFAULT_THREADS", "bls_search", "tls_search"]
 
@@ -98,7 +98,7 @@ class PeriodSearch:
 
 
 def bls_search(
-    lc: lk.LightCurve,
+    lc: LightCurve,
     *,
     period_min: float = 1.0,
     period_max: float = 10.0,
@@ -137,7 +137,7 @@ def bls_search(
 
 
 def tls_search(
-    lc: lk.LightCurve,
+    lc: LightCurve,
     *,
     period_min: float = 1.0,
     period_max: float = 10.0,

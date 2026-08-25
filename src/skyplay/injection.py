@@ -25,10 +25,11 @@ Two details that decide whether the answer means anything:
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
-import lightkurve as lk
 import numpy as np
+from lightkurve import LightCurve
 
 from . import models
 from .detrend import savgol_flatten
@@ -46,7 +47,7 @@ __all__ = [
 
 
 def inject_transit(
-    lc: lk.LightCurve,
+    lc: LightCurve,
     *,
     period: float,
     epoch: float,
@@ -54,7 +55,7 @@ def inject_transit(
     rp_rs: float | None = None,
     duration: float | None = None,
     density_solar: float = 1.0,
-) -> lk.LightCurve:
+) -> LightCurve:
     """Multiply a synthetic limb-darkened transit into a light curve.
 
     Give either ``depth`` (fractional dip, e.g. 5e-4) or ``rp_rs``. Depth is converted as
@@ -70,6 +71,7 @@ def inject_transit(
     if (depth is None) == (rp_rs is None):
         raise ValueError("give exactly one of depth= or rp_rs=")
     if rp_rs is None:
+        assert depth is not None  # guaranteed by the check above; narrows the type
         if depth <= 0:
             raise ValueError(f"depth must be positive, got {depth}")
         rp_rs = float(np.sqrt(depth))
@@ -89,8 +91,8 @@ def inject_transit(
 
 
 def mask_transits(
-    lc: lk.LightCurve, period: float, epoch: float, duration: float, pad: float = 1.5
-) -> lk.LightCurve:
+    lc: LightCurve, period: float, epoch: float, duration: float, pad: float = 1.5
+) -> LightCurve:
     """Drop the cadences inside a known transit. Returns a shorter light curve.
 
     Needed before injecting into a star that already hosts a planet: otherwise every
@@ -106,7 +108,7 @@ def mask_transits(
 
 
 def default_pipeline(
-    lc: lk.LightCurve,
+    lc: LightCurve,
     *,
     window_days: float = 18.8,
     period_min: float = 1.0,
@@ -181,12 +183,12 @@ class RecoveryMap:
 
 
 def recovery_grid(
-    lc: lk.LightCurve,
+    lc: LightCurve,
     *,
     periods: tuple[float, ...] = (2.0, 4.0, 6.0, 8.0),
     depths: tuple[float, ...] = (6e-5, 1.2e-4, 2.5e-4, 5e-4),
     n_trials: int = 5,
-    pipeline=None,
+    pipeline: Callable[[LightCurve], PeriodSearch] | None = None,
     tolerance: float = 0.02,
     allow_aliases: bool = False,
     rng: int | np.random.Generator = 0,

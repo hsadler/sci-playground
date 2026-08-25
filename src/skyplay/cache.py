@@ -20,13 +20,13 @@ import json
 from collections.abc import Callable
 from pathlib import Path
 
-import lightkurve as lk
 import numpy as np
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 from astropy import units as u
 from astropy.time import Time
+from lightkurve import LightCurve
 
 __all__ = ["cache_dir", "save_lightcurve", "load_lightcurve", "cached"]
 
@@ -45,7 +45,7 @@ def cache_dir() -> Path:
     return path
 
 
-def save_lightcurve(lc: lk.LightCurve, path: str | Path) -> Path:
+def save_lightcurve(lc: LightCurve, path: str | Path) -> Path:
     """Write a `LightCurve` to Parquet, preserving the time format and flux units."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -73,7 +73,7 @@ def save_lightcurve(lc: lk.LightCurve, path: str | Path) -> Path:
     return path
 
 
-def load_lightcurve(path: str | Path) -> lk.LightCurve:
+def load_lightcurve(path: str | Path) -> LightCurve:
     """Read back a `LightCurve` written by `save_lightcurve`."""
     table = pq.read_table(Path(path))
     raw = (table.schema.metadata or {}).get(_METADATA_KEY)
@@ -86,7 +86,7 @@ def load_lightcurve(path: str | Path) -> lk.LightCurve:
         scale=meta.get("time_scale", "tdb"),
     )
     unit = u.Unit(meta["flux_unit"]) if meta.get("flux_unit") else u.dimensionless_unscaled
-    return lk.LightCurve(
+    return LightCurve(
         time=time,
         flux=frame["flux"].to_numpy() * unit,
         flux_err=frame["flux_err"].to_numpy() * unit,
@@ -94,7 +94,7 @@ def load_lightcurve(path: str | Path) -> lk.LightCurve:
     )
 
 
-def cached(key: str, build: Callable[[], lk.LightCurve], refresh: bool = False) -> lk.LightCurve:
+def cached(key: str, build: Callable[[], LightCurve], refresh: bool = False) -> LightCurve:
     """Return the cached curve for ``key``, calling ``build()`` on a miss.
 
     ``key`` becomes a filename, so keep it filesystem-safe and *descriptive of

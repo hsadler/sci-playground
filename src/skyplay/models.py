@@ -21,6 +21,8 @@ wrong, because it is degenerate with inclination.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 __all__ = [
@@ -79,7 +81,7 @@ def transit_model(
     """
     import batman
 
-    params = batman.TransitParams()
+    params: Any = batman.TransitParams()  # batman is untyped; attributes are set below
     params.t0 = t0
     params.per = period
     params.rp = rp_rs

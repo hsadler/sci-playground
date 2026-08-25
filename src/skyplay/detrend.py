@@ -56,8 +56,10 @@ to think about this once.
 
 from __future__ import annotations
 
-import lightkurve as lk
+from typing import Any
+
 import numpy as np
+from lightkurve import LightCurve
 
 __all__ = [
     "cadence_days",
@@ -68,7 +70,7 @@ __all__ = [
 ]
 
 
-def cadence_days(lc: lk.LightCurve) -> float:
+def cadence_days(lc: LightCurve) -> float:
     """Median spacing between consecutive measurements, in days.
 
     Uses the median rather than the mean so data gaps (which are everywhere in
@@ -77,7 +79,7 @@ def cadence_days(lc: lk.LightCurve) -> float:
     return float(np.nanmedian(np.diff(np.asarray(lc.time.value, dtype=float))))
 
 
-def days_to_cadences(lc: lk.LightCurve, window_days: float) -> int:
+def days_to_cadences(lc: LightCurve, window_days: float) -> int:
     """Convert a window in days to an odd number of cadences, as Savitzky-Golay needs."""
     n = int(round(window_days / cadence_days(lc)))
     n = max(n, 3)
@@ -85,8 +87,8 @@ def days_to_cadences(lc: lk.LightCurve, window_days: float) -> int:
 
 
 def savgol_flatten(
-    lc: lk.LightCurve, window_days: float = 18.8, **kwargs
-) -> tuple[lk.LightCurve, lk.LightCurve]:
+    lc: LightCurve, window_days: float = 18.8, **kwargs: Any
+) -> tuple[LightCurve, LightCurve]:
     """Savitzky-Golay detrend via lightkurve. Returns ``(flat, trend)``.
 
     The default matches the ``window_length=901`` used in the earlier notebooks, so
@@ -113,10 +115,10 @@ def savgol_flatten(
 
 
 def biweight_flatten(
-    lc: lk.LightCurve,
+    lc: LightCurve,
     window_days: float = 0.5,
     method: str = "biweight",
-) -> tuple[lk.LightCurve, lk.LightCurve]:
+) -> tuple[LightCurve, LightCurve]:
     """Locally-robust detrend via wotan. Returns ``(flat, trend)`` as lightkurve objects.
 
     ``window_days`` should be at least ~3x your expected transit duration. For a
@@ -153,7 +155,7 @@ def biweight_flatten(
     return flat.remove_nans(), trend
 
 
-def estimate_noise(lc: lk.LightCurve, robust: bool = True) -> float:
+def estimate_noise(lc: LightCurve, robust: bool = True) -> float:
     """Per-cadence scatter, as a fraction of the flux. Use on an already-flattened curve.
 
     Two estimators, with **complementary blind spots** — which is the whole reason this

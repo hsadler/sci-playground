@@ -18,11 +18,18 @@ comparison helpers cap out at three series.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.axes import Axes
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.figure import Figure
 
 from .periods import PeriodSearch
+
+if TYPE_CHECKING:
+    from .injection import RecoveryMap
 from .synthetic import bin_curve, fold_phase
 
 __all__ = [
@@ -102,9 +109,9 @@ def plot_folded(
     phase_window: float | None = None,
     color: str = SERIES[0],
     label: str = "binned average",
-    ax: plt.Axes | None = None,
+    ax: Axes | None = None,
     title: str | None = None,
-) -> plt.Axes:
+) -> Axes:
     """Phase-fold and plot: gray cadences behind a binned average.
 
     ``phase_window`` zooms to +/- that phase around the transit; leave it None to
@@ -147,9 +154,9 @@ def plot_spectrum(
     result: PeriodSearch,
     *,
     color: str = SERIES[0],
-    ax: plt.Axes | None = None,
+    ax: Axes | None = None,
     mark_harmonics: bool = True,
-) -> plt.Axes:
+) -> Axes:
     """Plot a period spectrum with the peak marked.
 
     ``mark_harmonics`` annotates half and double the best period. Those aliases are
@@ -193,7 +200,7 @@ def plot_spectrum(
     return ax
 
 
-def compare_spectra(results: list[PeriodSearch], *, published: float | None = None) -> plt.Figure:
+def compare_spectra(results: list[PeriodSearch], *, published: float | None = None) -> Figure:
     """Stack period spectra as small multiples, one panel per method.
 
     Deliberately *not* a twin-axis overlay: the panels measure different
@@ -232,7 +239,9 @@ def compare_spectra(results: list[PeriodSearch], *, published: float | None = No
     return fig
 
 
-def plot_recovery_map(rmap, *, ax: plt.Axes | None = None, title: str | None = None) -> plt.Axes:
+def plot_recovery_map(
+    rmap: RecoveryMap, *, ax: Axes | None = None, title: str | None = None
+) -> Axes:
     """Heatmap of a `skyplay.injection.RecoveryMap`.
 
     Every cell is labelled with its percentage as well as shaded. That is deliberate: a
